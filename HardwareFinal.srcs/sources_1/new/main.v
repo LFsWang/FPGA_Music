@@ -64,11 +64,14 @@ module onepulse(sign,In,dclk);
     end
 endmodule
 
-module Main(led,clk,rMainbtn);
-    input clk,rMainbtn;
-    output [15:0] led;
-    
-    wire dclk, rMainbtn;
+module Main(
+	output wire [15:0] led,
+	input wire clk,
+	input wire rst,
+	input wire rMainbtn
+	);
+        
+    wire dclk;
     
     declock (.OClk(dclk), .IClk(clk));
     debounce (.Out(Mainbtn),.In(rMainbtn),.clk(clk));
@@ -76,9 +79,5 @@ module Main(led,clk,rMainbtn);
     assign led[2] = dclk;
     assign led[1] = rMainbtn;
     assign led[0] = Mainbtn;
-    
-    always @(posedge clk) begin
-        
-    end
     
 endmodule
