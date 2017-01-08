@@ -137,14 +137,16 @@ module DisplayDigit(an,seg,enable,value,mclk);
     end
 endmodule
 
-module Main(an,seg,led,clk,rMainbtn);
-    input clk,rMainbtn;
-    output [3:0] an;
-    output [6:0] seg;
-    output [15:0] led;
-    
-    
-    wire dclk, rMainbtn;
+module Main(
+    output [3:0] an,
+    output [6:0] seg,
+	output wire [15:0] led,
+	input wire clk,
+	input wire rst,
+	input wire rMainbtn
+	);
+        
+    wire dclk;
     
     declock (.OClk(dclk), .IClk(clk));
     debounce (.Out(Mainbtn),.In(rMainbtn),.mclk(clk));
