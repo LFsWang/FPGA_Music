@@ -36,18 +36,18 @@ module declock(OClk,IClk);
     output OClk;
     parameter n = 19;
     reg [20:0] bf;
-    assign IClk = bf[n];
+    assign OClk = bf[n];
     always @(posedge IClk)
         bf <= bf+1'b1;
 endmodule
 
-module debounce(Out,In,clk);
-    input In,clk;
+module debounce(Out,In,mclk);
+    input In,mclk;
     output Out;
     parameter bufsize = 4;
     reg [bufsize-1:0]bf;
     assign Out = &bf;
-    always @(posedge clk) begin
+    always @(posedge mclk) begin
         bf[bufsize-1:1] <= bf[bufsize-2:0];
         bf[0] <= In;
     end
@@ -71,7 +71,7 @@ module Main(led,clk,rMainbtn);
     wire dclk, rMainbtn;
     
     declock (.OClk(dclk), .IClk(clk));
-    debounce (.Out(Mainbtn),.In(rMainbtn),.clk(clk));
+    debounce (.Out(Mainbtn),.In(rMainbtn),.mclk(clk));
     //onepulse (
     assign led[2] = dclk;
     assign led[1] = rMainbtn;
