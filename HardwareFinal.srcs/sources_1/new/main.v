@@ -64,21 +64,105 @@ module onepulse(sign,In,dclk);
     end
 endmodule
 
-module Main(led,clk,rMainbtn);
+module mod10(q,r,a,mclk);
+    parameter n = 15;
+	input [n-1:0] a;
+	input mclk;
+	output [n-1:0] q,r;
+	
+	reg [n-1:0] r, nr, q, nq, la;
+	
+	always @(posedge mclk) begin
+		la <= a;
+		q <= nq;
+		r <= nr;
+	end
+	
+	always @(*) begin
+		if(a!=la) begin
+			nq = {7{1'b0}};
+			nr = a;
+		end else begin
+			if(r >= 7'd10) begin
+				nq = q+7'd1;
+				nr = r-7'd10;
+			end else begin
+				nq = q;
+				nr = r;
+			end
+		end
+	end
+endmodule
+
+module DisplayDigit(an,seg,enable,value,mclk);
+    input enable,mclk;
+    input [14:0]value;//0~9999
+    output reg [3:0] an;
+    output reg [6:0] seg;
+
+    wire dclk;
+    declock (.OClk(dclk), .IClk(mclk));
+    wire [14:0] A0,Q0,A1,Q1,A2,A3;
+    mod10 (.q(Q0),.r(A0),.a(value),.mclk(mclk));
+    mod10 (.q(Q1),.r(A1),.a(Q0),.mclk(mclk));
+    mod10 (.q(A3),.r(A2),.a(Q1),.mclk(mclk));
+    
+    wire [6:0] S0,S1,S2,S3;
+    segment (.seg(S0),.sw(A0[3:0]));
+    segment (.seg(S1),.sw(A1[3:0]));
+    segment (.seg(S2),.sw(A2[3:0]));
+    segment (.seg(S3),.sw(A3[3:0]));
+    always @(posedge dclk) begin
+        if( enable == 1'b0 )begin
+            an <= 4'b1110;
+        end else begin
+            an <= {an[3:1],an[0]};
+        end
+    end
+
+    always @(*) begin
+        if( enable == 1'b1 ) begin
+            if( an[0]==1'b0 ) begin
+                seg = S0;
+            end else if( an[1]==1'b0 ) begin
+                seg = S1;
+            end else if( an[2]==1'b0 ) begin
+                seg = S2;
+            end else begin
+                seg = S3;
+            end
+        end else begin
+            seg = 7'b1111111;
+        end
+    end
+endmodule
+
+module Main(an,seg,led,clk,rMainbtn);
     input clk,rMainbtn;
+    output [3:0] an;
+    output [6:0] seg;
     output [15:0] led;
+    
     
     wire dclk, rMainbtn;
     
     declock (.OClk(dclk), .IClk(clk));
     debounce (.Out(Mainbtn),.In(rMainbtn),.mclk(clk));
+    
+    wire enable;
+    reg [14:0] v;
+    DisplayDigit (.an(an),.seg(seg),.enable(enable),.value(v),.mclk(clk));
     //onepulse (
     assign led[2] = dclk;
     assign led[1] = rMainbtn;
     assign led[0] = Mainbtn;
+    assign enable = Mainbtn;
     
-    always @(posedge clk) begin
-        
+    always @(posedge dclk) begin
+        v = 15'd1234;
+        if( Mainbtn == 1'b1 )begin
+        end else begin
+        end
     end
     
 endmodule
