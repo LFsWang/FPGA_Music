@@ -141,28 +141,27 @@ module Main(
     output [3:0] an,
     output [6:0] seg,
 	output wire [15:0] led,
-	input wire clk,
-	input wire rst,
-	input wire rMainbtn
+	input wire clk_r,
+	input wire rst_r
 	);
         
     wire dclk;
     
-    declock (.OClk(dclk), .IClk(clk));
-    debounce (.Out(Mainbtn),.In(rMainbtn),.mclk(clk));
+    declock (.OClk(dclk), .IClk(clk_r));
+    debounce (.Out(rst),.In(rst_r),.mclk(clk_r));
     
     wire enable;
     reg [14:0] v;
     DisplayDigit (.an(an),.seg(seg),.enable(enable),.value(v),.mclk(clk));
     //onepulse (
     assign led[2] = dclk;
-    assign led[1] = rMainbtn;
-    assign led[0] = Mainbtn;
-    assign enable = Mainbtn;
+    assign led[1] = rst_r;
+    assign led[0] = rst;
+    assign enable = rst;
     
     always @(posedge dclk) begin
         v = 15'd1234;
-        if( Mainbtn == 1'b1 )begin
+        if( rst == 1'b1 )begin
         end else begin
         end
     end
