@@ -17,7 +17,7 @@ module metronome(
 	reg [31:0] count, bpm, nbpm;
 	reg [1:0] beat, nbeat, count_beat;
 	assign count_max = 32'd732420/bpm;
-	assign ncount = (count< count_max) ? count+1 : 32'd0;
+	assign ncount = (count < count_max) ? count+1 : 32'd0;
 	
 	assign freq = (count < 32'd1000) ? 4'b1000 : 4'b1100;
 	assign h = (count_beat==beat) ? 3'b100 : 3'b011;

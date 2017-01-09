@@ -53,7 +53,7 @@ module Main(
     wire [511:0] key_down, key_down_op;
 	wire [8:0] last_change;
 	wire been_ready;
-	KeyboardDecoder key_de (
+	KeyboardDecoder key_de(
 		.key_down(key_down),
 		.last_change(last_change),
 		.key_valid(been_ready),
@@ -62,7 +62,7 @@ module Main(
 		.rst(rst),
 		.clk(clk_r)
 	);
-	big_onepulse(.opsignal(key_down_op), .in(key_down), .clk(dclk));
+	big_onepulse bop(.opsignal(key_down_op), .in(key_down), .clk(dclk));
 	
     //audio
     wire [3:0] freq1, freq2, freq3;
@@ -109,7 +109,7 @@ module Main(
 	
 	//Metronome
 	wire [31:0] tempo;
-	metronome(
+	metronome mtr(
 		.freq(freq2), .h(h2), .count_max(tempo),
 		.rst(rst), .clk(clk_r),
 		.up(key_down[BTN_PLUS]), .down(key_down[BTN_SUB]),
@@ -117,14 +117,14 @@ module Main(
 	);
 	
 	//Composer
-	module Composer(
-		.freq(freq3), .h(h3),
+	Composer cmp(
+		.freq(freq3), .h(h3), .pos(led[6:0]),
 		.rst(rst), .clk(clk_r),
 		.high(key_down[BTN_PLUS]), .low(key_down[BTN_SUB]),
 		.left(key_down[BTN_LEFT]), .right(key_down[BTN_RIGHT]),
 		.freq_in(freq_in), .h_in(h_in),
 		.tempo(tempo),
-		.play(key_down[BTN_ENTER])
+		.play(key_down_op[BTN_ENTER])
 	);
 	
 	//Garbage
