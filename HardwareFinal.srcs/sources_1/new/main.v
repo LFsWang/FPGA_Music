@@ -39,6 +39,9 @@ module Main(
     parameter BTN_R = 9'b0_0010_1101;
     parameter BTN_F = 9'b0_0010_1011;
     parameter BTN_V = 9'b0_0010_1010;
+    parameter BTN_LEFT = 9'b0_0101_0100;
+    parameter BTN_RIGHT = 9'b0_0101_1011;
+    parameter BTN_ENTER = 9'b0_0101_1010;
     
     //top
     wire dclk, rst;
@@ -105,14 +108,27 @@ module Main(
 	speaker spk1(.clk(clk_r), .rst(rst), .freq(freq_out), .h(h_out), .duty(10'd512), .PWM(ja1));
 	
 	//Metronome
+	wire [31:0] tempo;
 	metronome(
-		.freq(freq2), .h(h2),
+		.freq(freq2), .h(h2), .count_max(tempo),
 		.rst(rst), .clk(clk_r),
 		.up(key_down[BTN_PLUS]), .down(key_down[BTN_SUB]),
-		.meter(h_in[4:1])
+		.meter({key_down[BTN_1], key_down[BTN_2], key_down[BTN_3], key_down[BTN_4]})
+	);
+	
+	//Composer
+	module Composer(
+		.freq(freq3), .h(h3),
+		.rst(rst), .clk(clk_r),
+		.high(key_down[BTN_PLUS]), .low(key_down[BTN_SUB]),
+		.left(key_down[BTN_LEFT]), .right(key_down[BTN_RIGHT]),
+		.freq_in(freq_in), .h_in(h_in),
+		.tempo(tempo),
+		.play(key_down[BTN_ENTER])
 	);
 	
 	//Garbage
+	//assign led[3:0] = h_in[4:1];
     wire up, down, high, low, left, right;
     reg [14:0] toDisplay;
     wire btnU, btnD, btnL, btnR;
