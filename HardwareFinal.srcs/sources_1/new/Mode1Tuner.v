@@ -7,6 +7,9 @@ module Tuner(
 		input wire [4:0] h_in
 	);
 	
+	wire dclk;
+	declock dc1(.Oclk(dclk), .Iclk(clk), .n(5'd4));
+	
 	parameter C  = 4'b0000;
 	parameter Cs = 4'b0001;
 	parameter D  = 4'b0010;
@@ -23,8 +26,8 @@ module Tuner(
 	
 	reg [3:0] nfreq;
 	reg [2:0] nh;
-		
-	always @(posedge clk) begin
+	
+	always @(posedge dclk) begin
 		if(rst) begin
 			freq = A;
 			h = 3'b010;

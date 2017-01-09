@@ -97,12 +97,20 @@ module Main(
 	//Tuner
 	Tuner tn1(.freq(freq1), .h(h1),
 		  .rst(rst), .clk(dclk),
-		  .high(key_down_op[BTN_PLUS]),
-		  .low(key_down_op[BTN_SUB]),
+		  .high(key_down[BTN_PLUS]),
+		  .low(key_down[BTN_SUB]),
 		  .freq_in(freq_in),
 		  .h_in(h_in)
 	);
 	speaker spk1(.clk(clk_r), .rst(rst), .freq(freq_out), .h(h_out), .duty(10'd512), .PWM(ja1));
+	
+	//Metronome
+	metronome(
+		.freq(freq2), .h(h2),
+		.rst(rst), .clk(clk),
+		.up(key_down[BTN_PLUS]), .down(key_down[BTN_SUB]),
+		.meter(h_in[4:1])
+	);
 	
 	//Garbage
     wire up, down, high, low, left, right;
