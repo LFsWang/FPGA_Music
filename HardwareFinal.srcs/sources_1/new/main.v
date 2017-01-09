@@ -107,7 +107,7 @@ module Main(
 	//Metronome
 	metronome(
 		.freq(freq2), .h(h2),
-		.rst(rst), .clk(clk),
+		.rst(rst), .clk(clk_r),
 		.up(key_down[BTN_PLUS]), .down(key_down[BTN_SUB]),
 		.meter(h_in[4:1])
 	);

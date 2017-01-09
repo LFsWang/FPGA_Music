@@ -40,7 +40,9 @@ module Tuner(
 	always @(*) begin
 		nfreq = freq;
 		if(high|low) begin
-			if(high) begin
+			if(high&low) begin
+				nfreq = freq;
+			end else if(high) begin
 				if(freq == B) nfreq = C;
 				else nfreq = freq+1'b1;
 			end else begin
