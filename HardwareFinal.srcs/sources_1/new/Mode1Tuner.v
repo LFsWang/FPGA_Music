@@ -2,7 +2,9 @@ module Tuner(
 		output reg [3:0] freq,
 		output reg [2:0] h,
 		input wire rst, clk,
-		input wire high, low
+		input wire high, low,
+		input wire [12:0] freq_in,
+		input wire [4:0] h_in
 	);
 	
 	parameter C  = 4'b0000;
@@ -42,6 +44,22 @@ module Tuner(
 				if(freq == C) nfreq = B;
 				else nfreq = freq-1'b1;
 			end
+		end else begin
+			case(freq_in)
+				13'b0_0000_0000_0001: nfreq = C;
+				13'b0_0000_0000_0010: nfreq = Cs;
+				13'b0_0000_0000_0100: nfreq = D;
+				13'b0_0000_0000_1000: nfreq = Ds;
+				13'b0_0000_0001_0000: nfreq = E;
+				13'b0_0000_0010_0000: nfreq = F;
+				13'b0_0000_0100_0000: nfreq = Fs;
+				13'b0_0000_1000_0000: nfreq = G;
+				13'b0_0001_0000_0000: nfreq = Gs;
+				13'b0_0010_0000_0000: nfreq = A;
+				13'b0_0100_0000_0000: nfreq = As;
+				13'b0_1000_0000_0000: nfreq = B;
+				default: nfreq = freq;
+			endcase
 		end
 	end
 	
@@ -55,5 +73,13 @@ module Tuner(
 			if(h == 3'd0) nh = 3'd4;
 			else nh = h-1'b1;
 		end
+		case(h_in)
+			5'b00001: nh = 3'b100;
+			5'b00010: nh = 3'b011;
+			5'b00100: nh = 3'b010;
+			5'b01000: nh = 3'b001;
+			5'b10000: nh = 3'b000;
+			default: nh = h;
+		endcase
 	end
 endmodule

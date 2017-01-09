@@ -22,3 +22,15 @@ module onepulse(
         last <= In;
     end
 endmodule
+
+module big_onepulse(
+	output reg [511:0] opsignal,
+	input [511:0] in,
+	input clk
+	);
+	reg [511:0] last;
+	always @(posedge clk) begin
+		opsignal <= in & (~last);
+		last <= in;
+	end
+endmodule
