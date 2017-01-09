@@ -40,49 +40,74 @@ module Main(
     parameter BTN_F = 9'b0_0010_1011;
     parameter BTN_V = 9'b0_0010_1010;
     
+    //top
+    wire dclk, rst;
+    declock dc1(.Oclk(dclk), .Iclk(clk_r), .n(5'd18));
+    debounce db1(.Out(rst),.In(rst_r),.mclk(clk_r));
+    reg [1:0] mode, nmode;
     
+    //keyboard
     wire [511:0] key_down, key_down_op;
 	wire [8:0] last_change;
 	wire been_ready;
+	KeyboardDecoder key_de (
+		.key_down(key_down),
+		.last_change(last_change),
+		.key_valid(been_ready),
+		.PS2_DATA(PS2Data),
+		.PS2_CLK(PS2Clk),
+		.rst(rst),
+		.clk(clk_r)
+	);
+	big_onepulse(.opsignal(key_down_op), .in(key_down), .clk(dclk));
 	
-    wire dclk, rst;
-    reg [1:0] mode, nmode;
-    wire up, down, high, low, left, right;
-    wire [12:0] freq_in;
-    assign freq_in = {
-    	key_down_op[BTN_WAVE],
-    	key_down_op[BTN_V],
-    	key_down_op[BTN_C],
-    	key_down_op[BTN_X],
-    	key_down_op[BTN_Z],
-    	key_down_op[BTN_F],
-    	key_down_op[BTN_D],
-    	key_down_op[BTN_S],
-    	key_down_op[BTN_A],
-    	key_down_op[BTN_R],
-    	key_down_op[BTN_E],
-    	key_down_op[BTN_W],
-    	key_down_op[BTN_Q]
-    };
-    wire [4:0] h_in;
-    assign h_in = {
-    	key_down_op[BTN_1],
-    	key_down_op[BTN_2],
-    	key_down_op[BTN_3],
-    	key_down_op[BTN_4],
-    	key_down_op[BTN_5]
-    };
+    //audio
     wire [3:0] freq1, freq2, freq3;
-    reg [3:0] freq_out;
-    wire [2:0] h1, h2, h3;
-    reg [2:0] h_out;
+	reg [3:0] freq_out;
+	wire [2:0] h1, h2, h3;
+	reg [2:0] h_out;
+    wire [12:0] freq_in;
+	assign freq_in = {
+		key_down_op[BTN_WAVE],
+		key_down_op[BTN_V],
+		key_down_op[BTN_C],
+		key_down_op[BTN_X],
+		key_down_op[BTN_Z],
+		key_down_op[BTN_F],
+		key_down_op[BTN_D],
+		key_down_op[BTN_S],
+		key_down_op[BTN_A],
+		key_down_op[BTN_R],
+		key_down_op[BTN_E],
+		key_down_op[BTN_W],
+		key_down_op[BTN_Q]
+	};
+	wire [4:0] h_in;
+	assign h_in = {
+		key_down_op[BTN_1],
+		key_down_op[BTN_2],
+		key_down_op[BTN_3],
+		key_down_op[BTN_4],
+		key_down_op[BTN_5]
+	};
+	
+	assign ja2 = 1'b1;
+	assign ja4 = 1'b1;
+	
+	//Tuner
+	Tuner tn1(.freq(freq1), .h(h1),
+		  .rst(rst), .clk(dclk),
+		  .high(key_down_op[BTN_PLUS]),
+		  .low(key_down_op[BTN_SUB]),
+		  .freq_in(freq_in),
+		  .h_in(h_in)
+	);
+	speaker spk1(.clk(clk_r), .rst(rst), .freq(freq_out), .h(h_out), .duty(10'd512), .PWM(ja1));
+	
+	//Garbage
+    wire up, down, high, low, left, right;
     reg [14:0] toDisplay;
-    
     wire btnU, btnD, btnL, btnR;
-    
-    big_onepulse(.opsignal(key_down_op), .in(key_down), .clk(dclk));
-    declock dc1(.Oclk(dclk), .Iclk(clk_r), .n(5'd18));
-    debounce db1(.Out(rst),.In(rst_r),.mclk(clk_r));
     debounce db2(.Out(btnU),.In(btnU_r),.mclk(clk_r));
     debounce db3(.Out(btnD),.In(btnD_r),.mclk(clk_r));
     debounce db4(.Out(btnL),.In(btnL_r),.mclk(clk_r));
@@ -93,29 +118,9 @@ module Main(
     onepulse op3(.sign(left), .In(btnL), .dclk(dclk));
     onepulse op4(.sign(right), .In(btnR), .dclk(dclk));
     DisplayDigit dd1(.an(an), .seg(seg), .enable(rst), .value(toDisplay), .mclk(dclk));
-    Tuner tn1(.freq(freq1), .h(h1),
-    		  .rst(rst), .clk(dclk),
-    		  .high(key_down_op[BTN_PLUS]),
-    		  .low(key_down_op[BTN_SUB]),
-    		  .freq_in(freq_in),
-    		  .h_in(h_in)
-    	);
-    speaker spk1(.clk(clk_r), .rst(rst), .freq(freq_out), .h(h_out), .duty(10'd512), .PWM(ja1));
     
-    KeyboardDecoder key_de (
-    		.key_down(key_down),
-    		.last_change(last_change),
-    		.key_valid(been_ready),
-    		.PS2_DATA(PS2Data),
-    		.PS2_CLK(PS2Clk),
-    		.rst(rst),
-    		.clk(clk_r)
-    	);
-    
-    assign ja2 = 1'b1;
-    assign ja4 = 1'b1;
-    assign led[15:12] = freq1;
-    assign led[10:8] = h1;
+    assign led[15:12] = freq_out;
+    assign led[10:8] = h_out;
     
     always @(posedge dclk) begin
         if( rst == 1'b1 )begin
