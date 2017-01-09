@@ -10,6 +10,10 @@ module Main(
 	inout wire PS2Data,
 	inout wire PS2Clk
 	);
+	parameter BTN_F1 = 9'b0_0000_0101;
+	parameter BTN_F2 = 9'b0_0000_0110;
+	parameter BTN_F3 = 9'b0_0000_0100;
+	parameter BTN_F4 = 9'b0_0000_1100;
 	parameter BTN_WAVE = 9'b0_0000_1110;
     parameter BTN_0 = 9'b0_0100_0101;
     parameter BTN_1 = 9'b0_0001_0110;
@@ -42,10 +46,8 @@ module Main(
 	wire been_ready;
 	
     wire dclk, rst;
-    wire [1:0] mode;
+    reg [1:0] mode, nmode;
     wire up, down, high, low, left, right;
-    wire [3:0] freq1, freq2, freq3;
-    wire [2:0] h1, h2, h3;
     wire [12:0] freq_in;
     assign freq_in = {
     	key_down_op[BTN_WAVE],
@@ -70,8 +72,10 @@ module Main(
     	key_down_op[BTN_4],
     	key_down_op[BTN_5]
     };
-    reg test;
-    
+    wire [3:0] freq1, freq2, freq3;
+    reg [3:0] freq_out;
+    wire [2:0] h1, h2, h3;
+    reg [2:0] h_out;
     reg [14:0] toDisplay;
     
     wire btnU, btnD, btnL, btnR;
@@ -96,8 +100,7 @@ module Main(
     		  .freq_in(freq_in),
     		  .h_in(h_in)
     	);
-    
-    speaker spk1(.clk(clk_r), .rst(rst), .freq(freq1), .h(h1), .duty(10'd512), .PWM(ja1));
+    speaker spk1(.clk(clk_r), .rst(rst), .freq(freq_out), .h(h_out), .duty(10'd512), .PWM(ja1));
     
     KeyboardDecoder key_de (
     		.key_down(key_down),
@@ -108,9 +111,6 @@ module Main(
     		.rst(rst),
     		.clk(clk_r)
     	);
-    assign mode = sw[1] ? 2'b01 :
-    			  sw[2] ? 2'b10 :
-    			  sw[3] ? 2'b11 : 2'b00;
     
     assign ja2 = 1'b1;
     assign ja4 = 1'b1;
@@ -119,42 +119,39 @@ module Main(
     
     always @(posedge dclk) begin
         if( rst == 1'b1 )begin
-        	test <= 1'b0;
+        	mode <= 2'b00;
         end else begin
-        	test <= test^high;
+        	mode <= nmode;
         end
     end
-    always @(posedge dclk) begin
-        	case(mode)
-        		2'b01: begin
-        			toDisplay = h1*14'd100+freq1;
-        		end
-        		2'b10: begin
-        			toDisplay = 0;
-        		end
-        		2'b11: begin
-        			toDisplay = 0;
-        		end
-        		default: begin
-        			toDisplay = 0;
-        		end
-        	endcase
-        end
-    /*always @(posedge dclk) begin
+    always @(*) begin
+    	nmode = mode;
+    	if(key_down_op[BTN_F1]|key_down_op[BTN_F2]) begin
+    		if(key_down_op[BTN_F1]) nmode = 2'b01;
+    		else nmode = 2'b10;
+    	end else if(key_down_op[BTN_F3]|key_down_op[BTN_F4]) begin
+    		if(key_down_op[BTN_F3]) nmode = 2'b11;
+    		else nmode = 2'b00;
+    	end
+    end
+    always @(*) begin
     	case(mode)
+    		2'b00: begin
+    			freq_out = 4'b1100;
+    			h_out = 3'b010;
+    		end
     		2'b01: begin
-    		
+    			freq_out = freq1;
+    			h_out = h1;
     		end
     		2'b10: begin
-    		
+    			freq_out = freq2;
+    			h_out = h2;
     		end
     		2'b11: begin
-    		
-    		end
-    		default: begin
-    		
+    			freq_out = freq3;
+    			h_out = h3;
     		end
     	endcase
-    end*/
-    
+    end
 endmodule
