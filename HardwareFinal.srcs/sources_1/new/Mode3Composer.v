@@ -27,9 +27,12 @@ module Composer(
 		.h(h),
 		.rst(rst), .clk(dclk),
 		.high(), .low(),
-		.freq_in(freq_ram[pos]),
-		.h_in(h_ram[pos])
+		.freq_in(freq_in),
+		.h_in(h_in)
 	);
+	/*always @(*) begin
+		freq_ram[pos] = 
+	end */
 	always @(posedge dclk) begin
 		if(rst) begin
 			pos <= 7'd0;
@@ -72,9 +75,9 @@ module Composer(
 				end
 			end
 		end else begin
-			npos = pos;
 			if(count==tempo-1) npos = (pos == 7'd127) ? pos : pos+1;
 			else npos = pos;
 		end
 	end
+	
 endmodule
