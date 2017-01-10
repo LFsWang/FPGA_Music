@@ -39,9 +39,19 @@ module Main(
     parameter BTN_R = 9'b0_0010_1101;
     parameter BTN_F = 9'b0_0010_1011;
     parameter BTN_V = 9'b0_0010_1010;
+    parameter BTN_P = 9'b0_0100_1101;
     parameter BTN_LEFT = 9'b0_0101_0100;
     parameter BTN_RIGHT = 9'b0_0101_1011;
     parameter BTN_ENTER = 9'b0_0101_1010;
+    parameter BTN_R1 = 9'b0_0110_1001;
+    parameter BTN_R2 = 9'b0_0111_0010;
+    parameter BTN_R3 = 9'b0_0111_1010;
+    parameter BTN_R4 = 9'b0_0110_1011;
+    parameter BTN_R5 = 9'b0_0111_0011;
+    parameter BTN_R6 = 9'b0_0111_0100;
+    parameter BTN_R7 = 9'b0_0110_1100;
+    parameter BTN_R8 = 9'b0_0111_0101;
+    parameter BTN_R9 = 9'b0_0111_1101;
     
     //top
     wire dclk, rst;
@@ -71,27 +81,27 @@ module Main(
 	reg [2:0] h_out;
     wire [12:0] freq_in;
 	assign freq_in = {
-		key_down_op[BTN_WAVE],
-		key_down_op[BTN_V],
-		key_down_op[BTN_C],
-		key_down_op[BTN_X],
-		key_down_op[BTN_Z],
-		key_down_op[BTN_F],
-		key_down_op[BTN_D],
-		key_down_op[BTN_S],
-		key_down_op[BTN_A],
-		key_down_op[BTN_R],
-		key_down_op[BTN_E],
-		key_down_op[BTN_W],
-		key_down_op[BTN_Q]
+		key_down[BTN_WAVE],
+		key_down[BTN_V],
+		key_down[BTN_C],
+		key_down[BTN_X],
+		key_down[BTN_Z],
+		key_down[BTN_F],
+		key_down[BTN_D],
+		key_down[BTN_S],
+		key_down[BTN_A],
+		key_down[BTN_R],
+		key_down[BTN_E],
+		key_down[BTN_W],
+		key_down[BTN_Q]
 	};
 	wire [4:0] h_in;
 	assign h_in = {
-		key_down_op[BTN_1],
-		key_down_op[BTN_2],
-		key_down_op[BTN_3],
-		key_down_op[BTN_4],
-		key_down_op[BTN_5]
+		key_down[BTN_1],
+		key_down[BTN_2],
+		key_down[BTN_3],
+		key_down[BTN_4],
+		key_down[BTN_5]
 	};
 	
 	assign ja2 = 1'b1;
@@ -117,30 +127,30 @@ module Main(
 	);
 	
 	//Composer
+	wire [7:0] len_in;
+	assign len_in = {
+		key_down[BTN_R1],
+		key_down[BTN_R2],
+		key_down[BTN_R3],
+		key_down[BTN_R4],
+		key_down[BTN_R5],
+		key_down[BTN_R6],
+		key_down[BTN_R7],
+		key_down[BTN_R8]
+	};
 	Composer cmp(
-		.freq(freq3), .h(h3), .pos(led[6:0]),
+		.freq(freq3), .h(h3), .pos(led[6:0]), .state(led[7]),
 		.rst(rst), .clk(clk_r),
 		.high(key_down[BTN_PLUS]), .low(key_down[BTN_SUB]),
 		.left(key_down[BTN_LEFT]), .right(key_down[BTN_RIGHT]),
-		.freq_in(freq_in), .h_in(h_in),
+		.freq_in(freq_in), .h_in(h_in), .len_in(len_in),
 		.tempo(tempo),
-		.play(key_down_op[BTN_ENTER])
+		.play(key_down[BTN_ENTER]), .to_start(key_down[BTN_P])
 	);
 	
 	//Garbage
 	//assign led[3:0] = h_in[4:1];
-    wire up, down, high, low, left, right;
     reg [14:0] toDisplay;
-    wire btnU, btnD, btnL, btnR;
-    debounce db2(.Out(btnU),.In(btnU_r),.mclk(clk_r));
-    debounce db3(.Out(btnD),.In(btnD_r),.mclk(clk_r));
-    debounce db4(.Out(btnL),.In(btnL_r),.mclk(clk_r));
-    debounce db5(.Out(btnR),.In(btnR_r),.mclk(clk_r));
-    //onepulse op1(.sign(high), .In(btnU), .dclk(dclk));
-    //assign high = key_down[9'b0_0100_0110];
-    onepulse op2(.sign(low), .In(btnD), .dclk(dclk));
-    onepulse op3(.sign(left), .In(btnL), .dclk(dclk));
-    onepulse op4(.sign(right), .In(btnR), .dclk(dclk));
     DisplayDigit dd1(.an(an), .seg(seg), .enable(rst), .value(toDisplay), .mclk(dclk));
     
     assign led[15:12] = freq_out;
